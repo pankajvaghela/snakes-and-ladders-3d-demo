@@ -13,6 +13,10 @@ import Snake5 from './snake5.glb';
 import Snake6 from './snake6.glb';
 import Dice from './dice.glb';
 import Dice2 from './dice2.glb';
+import PawnBlue from './pawn-blue.glb';
+import PawnRed from './pawn-red.glb';
+import PawnYellow from './pawn-yellow.glb';
+import PawnGreen from './pawn-green.glb';
 
 export {
   GameBoard1,
@@ -30,4 +34,8 @@ export {
   Snake4,
   Snake5,
   Snake6,
+  PawnBlue,
+  PawnRed,
+  PawnYellow,
+  PawnGreen,
 };
