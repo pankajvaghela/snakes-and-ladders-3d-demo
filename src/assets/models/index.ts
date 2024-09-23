@@ -1,5 +1,5 @@
 import GameBoard1 from './game-board.glb';
-import GameBoard2 from './game-board2.glb';
+import GameBoard from './game-board2.glb';
 import Ladder1 from './ladder1.glb';
 import Ladder2 from './ladder2.glb';
 import Ladder3 from './ladder3.glb';
@@ -16,7 +16,7 @@ import Dice2 from './dice2.glb';
 
 export {
   GameBoard1,
-  GameBoard2,
+  GameBoard,
   Dice,
   Dice2,
   Ladder1,
