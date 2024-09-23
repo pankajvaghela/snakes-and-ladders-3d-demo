@@ -8,7 +8,7 @@ import {
   RenderCallback,
   useFilamentContext,
 } from 'react-native-filament';
-import {Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {GameBoard} from '../assets/models';
 import {SceneLight} from './core/SceneLight';
 import {useDice} from '../hooks/useDice';
@@ -22,8 +22,15 @@ const GameBoardSceneRenderer = () => {
 
   useGameFloor(world);
 
-  const {diceRoll, rollDice, gameStarted, startGame, addEventListener} =
-    useGameContext();
+  const {
+    diceRoll,
+    rollDice,
+    gameStarted,
+    startGame,
+    addEventListener,
+    players,
+    currentPlayer,
+  } = useGameContext();
 
   useEffect(() => {
     if (!gameStarted) {
@@ -40,6 +47,7 @@ const GameBoardSceneRenderer = () => {
         );
       },
     );
+
     const gameFinishListener = addEventListener(
       'game_finish',
       ({player}: {player: Player}) => {
@@ -77,8 +85,38 @@ const GameBoardSceneRenderer = () => {
     [diceMeshEntity, diceRigidBody, transformManager, world],
   );
 
+  const staticContent = (
+    <>
+      {/* scoreboard view */}
+      <View style={styles.scoreBoardView}>
+        {players.map((player, index) => {
+          const isTurn = currentPlayer === index;
+          const playerText = `${player.name}: ${player.position} ${
+            isTurn ? '#' : ''
+          }`;
+          return (
+            <Text style={{...styles.scoreBoardText, color: player.color}}>
+              {playerText}
+            </Text>
+          );
+        })}
+      </View>
+
+      {/* roll a dice view */}
+      <View style={styles.rollDiceContainer}>
+        <Text style={styles.diceText} onPress={rollDice}>
+          {diceRoll && Math.floor(diceRoll)}
+        </Text>
+
+        <Text style={styles.diceText} onPress={rollDice}>
+          Roll Dice
+        </Text>
+      </View>
+    </>
+  );
+
   return (
-    <FilamentView style={{flex: 1}} renderCallback={renderCallback}>
+    <FilamentView style={styles.filamentView} renderCallback={renderCallback}>
       {/* 🏞️ A view to draw the 3D content to */}
 
       {/* 💡 A light source, otherwise the scene will be black */}
@@ -96,18 +134,14 @@ const GameBoardSceneRenderer = () => {
       {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
       {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
 
-      <Text
-        style={{fontSize: 32, position: 'absolute', bottom: 20, right: 20}}
-        onPress={rollDice}>
-        Roll Dice
-      </Text>
+      {staticContent}
     </FilamentView>
   );
 };
 
 export const GameBoardScene = () => {
   return (
-    <View style={{flex: 1}}>
+    <View style={styles.container}>
       <GameProvider>
         <FilamentScene>
           {/* Separate parent wrapper so that we have the context in child components */}
@@ -117,3 +151,34 @@ export const GameBoardScene = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  filamentView: {
+    flex: 1,
+    backgroundColor: '#EEEEFF',
+  },
+  rollDiceContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    left: 20,
+  },
+  diceText: {
+    fontSize: 32,
+  },
+  scoreBoardView: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    padding: 10,
+  },
+  scoreBoardText: {
+    fontSize: 26,
+  },
+});

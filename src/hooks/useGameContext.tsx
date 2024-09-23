@@ -56,8 +56,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({
   onGameFinish,
 }) => {
   const [players, setPlayers] = useState<Player[]>([
-    {name: 'Player 1', color: 'red', position: 0},
-    {name: 'Player 2', color: 'blue', position: 0},
+    {name: 'Red', color: 'red', position: 0},
+    {name: 'Blue', color: 'blue', position: 0},
   ]);
 
   const [diceRoll, setDiceRoll] = useState<number | null>(null);
