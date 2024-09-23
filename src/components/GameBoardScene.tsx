@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
   FilamentScene,
   FilamentView,
@@ -13,7 +13,7 @@ import {GameBoard} from '../assets/models';
 import {SceneLight} from './core/SceneLight';
 import {useDice} from '../hooks/useDice';
 import {useGameFloor} from '../hooks/useGameFloor';
-import {getRandomDiceNumber} from '../utils/diceUtils';
+import {GameProvider, Player, useGameContext} from '../hooks/useGameContext';
 
 const GameBoardSceneRenderer = () => {
   const world = useWorld(0, -9.8, 0);
@@ -22,13 +22,40 @@ const GameBoardSceneRenderer = () => {
 
   useGameFloor(world);
 
-  const [diceFaceNumber, setDiceFaceNumber] = React.useState(
-    getRandomDiceNumber(),
-  );
+  const {diceRoll, rollDice, gameStarted, startGame, addEventListener} =
+    useGameContext();
+
+  useEffect(() => {
+    if (!gameStarted) {
+      startGame();
+    }
+  }, [gameStarted, startGame]);
+
+  useEffect(() => {
+    const playerKillListener = addEventListener(
+      'player_killed',
+      ({player, by}: {player: Player; by: Player}) => {
+        console.log(
+          `🚀 ~ player_killed ~ ${player.name} by ${by.name} at ${by.position}`,
+        );
+      },
+    );
+    const gameFinishListener = addEventListener(
+      'game_finish',
+      ({player}: {player: Player}) => {
+        console.log(`🚀 ~ game_finish ~ Winner: ${player.name}`);
+      },
+    );
+
+    return () => {
+      playerKillListener();
+      gameFinishListener();
+    };
+  }, [addEventListener]);
 
   const {diceMeshEntity, diceRigidBody} = useDice({
     world,
-    diceFaceNumber: diceFaceNumber,
+    diceFaceNumber: diceRoll ?? 6,
   });
 
   const renderCallback: RenderCallback = useCallback(
@@ -50,18 +77,8 @@ const GameBoardSceneRenderer = () => {
     [diceMeshEntity, diceRigidBody, transformManager, world],
   );
 
-  const rollDice = useCallback(() => {
-    // Adding extra float component , so that we can roll same number again and again
-    const diceNumber = getRandomDiceNumber() + Math.random() * 0.1;
-    console.log('🚀 ~ rollDice ~ diceNumber:', diceNumber);
-    setDiceFaceNumber(diceNumber);
-  }, []);
-
   return (
     <FilamentView style={{flex: 1}} renderCallback={renderCallback}>
-      <Text style={{fontSize: 32}} onPress={rollDice}>
-        Roll Dice
-      </Text>
       {/* 🏞️ A view to draw the 3D content to */}
 
       {/* 💡 A light source, otherwise the scene will be black */}
@@ -78,6 +95,12 @@ const GameBoardSceneRenderer = () => {
       {/* <Camera /> */}
       {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
       {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
+
+      <Text
+        style={{fontSize: 32, position: 'absolute', bottom: 20, right: 20}}
+        onPress={rollDice}>
+        Roll Dice
+      </Text>
     </FilamentView>
   );
 };
@@ -85,10 +108,12 @@ const GameBoardSceneRenderer = () => {
 export const GameBoardScene = () => {
   return (
     <View style={{flex: 1}}>
-      <FilamentScene>
-        {/* Separate parent wrapper so that we have the context in child components */}
-        <GameBoardSceneRenderer />
-      </FilamentScene>
+      <GameProvider>
+        <FilamentScene>
+          {/* Separate parent wrapper so that we have the context in child components */}
+          <GameBoardSceneRenderer />
+        </FilamentScene>
+      </GameProvider>
     </View>
   );
 };

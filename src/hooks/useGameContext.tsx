@@ -1,7 +1,13 @@
-import React, {createContext, useState, useContext, ReactNode} from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useCallback,
+} from 'react';
 
 // Define player type
-interface Player {
+export interface Player {
   name: string;
   color: 'red' | 'blue' | 'yellow' | 'green';
   position: number;
@@ -18,7 +24,9 @@ interface GameContextType {
   startGame: () => void;
   resetGame: () => void;
   restartGame: () => void;
-  onGameFinish: (winner: Player) => void; // Callback for when a player wins
+  onGameFinish?: (winner: Player) => void; // Callback for when a player wins
+  addEventListener: (event: string, listener: Function) => () => void;
+  removeEventListener: (event: string, listener: Function) => void;
 }
 
 // Create the context
@@ -27,7 +35,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 // Define the provider's props type
 interface GameProviderProps {
   children: ReactNode;
-  onGameFinish: (winner: Player) => void; // Add the callback prop here
+  onGameFinish?: (winner: Player) => void; // Add the callback prop here
 }
 
 // Constant to toggle killing functionality
@@ -56,13 +64,46 @@ export const GameProvider: React.FC<GameProviderProps> = ({
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [gameStarted, setGameStarted] = useState<boolean>(false);
 
+  const [listeners, setListeners] = useState<{[key: string]: Function[]}>({});
+
+  const removeEventListener = useCallback(
+    (event: string, listener: Function) => {
+      setListeners(prevListeners => ({
+        ...prevListeners,
+        [event]: (prevListeners[event] || []).filter(l => l !== listener),
+      }));
+    },
+    [],
+  );
+
+  const addEventListener = useCallback(
+    (event: string, listener: Function) => {
+      setListeners(prevListeners => ({
+        ...prevListeners,
+        [event]: [...(prevListeners[event] || []), listener],
+      }));
+
+      return () => {
+        removeEventListener(event, listener);
+      };
+    },
+    [removeEventListener],
+  );
+
+  // Trigger the event when the game finishes
+  const triggerEvent = (event: string, data: any) => {
+    (listeners[event] || []).forEach(listener => listener(data));
+  };
+
   // Roll dice function
   const rollDice = () => {
     if (!gameStarted) return;
 
-    const roll = Math.floor(Math.random() * 6) + 1;
+    // const roll = 2 + Math.random() * 0.1;
+    const roll = Math.floor(Math.random() * 6) + 1 + Math.random() * 0.1;
+    console.log('🚀 ~ rollDice ~ roll:', roll);
     setDiceRoll(roll);
-    movePlayer(currentPlayer, roll);
+    movePlayer(currentPlayer, Math.floor(roll));
   };
 
   // Check if the player lands on a snake or ladder, with delay
@@ -122,7 +163,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({
 
     // Check if the current player has won the game
     if (finalPosition === WINNING_POSITION) {
-      onGameFinish(players[playerIndex]); // Trigger the game finish callback
+      onGameFinish?.(players[playerIndex]); // Trigger the game finish callback
+      triggerEvent('game_finish', {player: players[playerIndex]});
       return;
     }
 
@@ -139,6 +181,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({
       prevPlayers.map((player, index) => {
         // If another player is on the same spot and it's not the current player, reset their position
         if (index !== currentPlayerIndex && player.position === newPosition) {
+          triggerEvent('player_killed', {
+            player: player,
+            by: players[currentPlayerIndex],
+          });
           return {...player, position: 0};
         }
         return player;
@@ -191,6 +237,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({
         resetGame,
         restartGame,
         onGameFinish,
+        addEventListener,
+        removeEventListener,
       }}>
       {children}
     </GameContext.Provider>
