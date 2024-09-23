@@ -18,6 +18,13 @@ import PawnRed from './pawn-red.glb';
 import PawnYellow from './pawn-yellow.glb';
 import PawnGreen from './pawn-green.glb';
 
+export const PawnAssets = {
+  blue: PawnBlue,
+  red: PawnRed,
+  yellow: PawnYellow,
+  green: PawnGreen,
+};
+
 export {
   GameBoard1,
   GameBoard,
