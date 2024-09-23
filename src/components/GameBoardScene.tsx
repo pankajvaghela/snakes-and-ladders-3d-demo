@@ -1,17 +1,33 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
   FilamentScene,
   FilamentView,
   Model,
   Camera,
+  useWorld,
+  RenderCallback,
 } from 'react-native-filament';
 import {View} from 'react-native';
 import {GameBoard} from '../assets/models';
 import {SceneLight} from './core/SceneLight';
 
 const GameBoardSceneRenderer = () => {
+  const world = useWorld(0, -9.8, 0);
+
+  const renderCallback: RenderCallback = useCallback(
+    ({timeSinceLastFrame}) => {
+      'worklet';
+
+      // Update our entity:
+      // This updates the world at 60Hz/60 FPS. If our actual frame rate
+      // is different stepSimulation will interpolate the physics.
+      world.stepSimulation(timeSinceLastFrame, 1, 1 / 40);
+    },
+    [world],
+  );
+
   return (
-    <FilamentView style={{flex: 1}}>
+    <FilamentView style={{flex: 1}} renderCallback={renderCallback}>
       {/* 🏞️ A view to draw the 3D content to */}
 
       {/* 💡 A light source, otherwise the scene will be black */}
@@ -21,8 +37,8 @@ const GameBoardSceneRenderer = () => {
 
       {/* 📹 A camera through which the scene is observed and projected onto the view */}
       {/* <Camera /> */}
-      {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
-      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
+      <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} />
+      {/* {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />} */}
     </FilamentView>
   );
 };
