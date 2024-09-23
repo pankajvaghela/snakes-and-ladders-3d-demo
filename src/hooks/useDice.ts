@@ -8,8 +8,14 @@ import {
 import {Dice2} from '../assets/models';
 import {useGetModelData} from './useGetModelData';
 import React from 'react';
+import {diceRotations} from '../utils/diceUtils';
 
-export const useDice = (world: DiscreteDynamicWorld) => {
+export const useDice = (params: {
+  world: DiscreteDynamicWorld;
+  diceFaceNumber?: number;
+}) => {
+  const {world, diceFaceNumber = 2} = params;
+
   const diceModel = useModel(Dice2);
 
   const {transformManager} = useFilamentContext();
@@ -22,13 +28,23 @@ export const useDice = (world: DiscreteDynamicWorld) => {
       return [];
     }
 
-    transformManager.setEntityPosition(entity, [3, 15, 0.0], false);
+    const rotation = diceRotations[diceFaceNumber];
+
+    transformManager.setEntityRotation(
+      entity,
+      rotation.angleRad,
+      rotation.axis,
+      false,
+    );
+
+    transformManager.setEntityPosition(entity, [3, 12, 0.0], true);
+
     transformManager.setEntityScale(entity, [0.5, 0.5, 0.5], true);
 
     const transform = transformManager.getTransform(entity);
 
     return [entity, transform] as const;
-  }, [diceBoundingBox, diceModelEntity, transformManager]);
+  }, [diceBoundingBox, diceFaceNumber, diceModelEntity, transformManager]);
 
   const diceShape = useBoxShape(
     diceBoundingBox == null ? 0 : diceBoundingBox.halfExtent[0],

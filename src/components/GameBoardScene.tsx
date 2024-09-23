@@ -21,7 +21,7 @@ const GameBoardSceneRenderer = () => {
 
   useGameFloor(world);
 
-  const {diceMeshEntity, diceRigidBody} = useDice(world);
+  const {diceMeshEntity, diceRigidBody} = useDice({world});
 
   const renderCallback: RenderCallback = useCallback(
     ({timeSinceLastFrame}) => {
