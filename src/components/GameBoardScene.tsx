@@ -12,11 +12,14 @@ import {View} from 'react-native';
 import {GameBoard} from '../assets/models';
 import {SceneLight} from './core/SceneLight';
 import {useDice} from '../hooks/useDice';
+import {useGameFloor} from '../hooks/useGameFloor';
 
 const GameBoardSceneRenderer = () => {
   const world = useWorld(0, -9.8, 0);
 
   const {transformManager} = useFilamentContext();
+
+  useGameFloor(world);
 
   const {diceMeshEntity, diceRigidBody} = useDice(world);
 
@@ -46,12 +49,17 @@ const GameBoardSceneRenderer = () => {
       {/* 💡 A light source, otherwise the scene will be black */}
       <SceneLight />
 
-      <Model source={GameBoard} rotate={[0, 0, 0]} scale={[1, 1, 1]} />
+      <Model
+        source={GameBoard}
+        rotate={[0, 0, 0]}
+        scale={[1, 1, 1]}
+        translate={[0, -0.5, 0]}
+      />
 
       {/* 📹 A camera through which the scene is observed and projected onto the view */}
       {/* <Camera /> */}
-      <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} />
-      {/* {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />} */}
+      {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
+      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
     </FilamentView>
   );
 };
