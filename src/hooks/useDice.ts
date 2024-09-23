@@ -28,7 +28,7 @@ export const useDice = (params: {
       return [];
     }
 
-    const rotation = diceRotations[diceFaceNumber];
+    const rotation = diceRotations[Math.floor(diceFaceNumber)];
 
     transformManager.setEntityRotation(
       entity,

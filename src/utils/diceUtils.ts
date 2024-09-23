@@ -1,6 +1,6 @@
 import {Float3} from 'react-native-filament';
 
-export const getDiceNumber = () => Math.floor(Math.random() * 6) + 1;
+export const getRandomDiceNumber = () => Math.floor(Math.random() * 6) + 1;
 
 interface Rotation {
   angleRad: number;
