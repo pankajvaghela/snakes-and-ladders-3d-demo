@@ -14,6 +14,7 @@ import {SceneLight} from './core/SceneLight';
 import {useDice} from '../hooks/useDice';
 import {useGameFloor} from '../hooks/useGameFloor';
 import {GameProvider, Player, useGameContext} from '../hooks/useGameContext';
+import {usePawn} from '../hooks/usePawn';
 
 const GameBoardSceneRenderer = () => {
   const world = useWorld(0, -9.8, 0);
@@ -66,6 +67,18 @@ const GameBoardSceneRenderer = () => {
     diceFaceNumber: diceRoll ?? 6,
   });
 
+  const player1Pawn = usePawn({
+    world,
+    color: players[0].color,
+    position: players[0].position,
+  });
+
+  const player2Pawn = usePawn({
+    world,
+    color: players[1].color,
+    position: players[1].position,
+  });
+
   const renderCallback: RenderCallback = useCallback(
     ({timeSinceLastFrame}) => {
       'worklet';
@@ -81,8 +94,29 @@ const GameBoardSceneRenderer = () => {
           diceRigidBody,
         );
       }
+
+      if (player1Pawn.pawnMeshEntity && player1Pawn.pawnRigidBody) {
+        transformManager.updateTransformByRigidBody(
+          player1Pawn.pawnMeshEntity,
+          player1Pawn.pawnRigidBody,
+        );
+      }
+
+      if (player2Pawn.pawnMeshEntity && player2Pawn.pawnRigidBody) {
+        transformManager.updateTransformByRigidBody(
+          player2Pawn.pawnMeshEntity,
+          player2Pawn.pawnRigidBody,
+        );
+      }
     },
-    [diceMeshEntity, diceRigidBody, transformManager, world],
+    [
+      player1Pawn,
+      player2Pawn,
+      diceMeshEntity,
+      diceRigidBody,
+      transformManager,
+      world,
+    ],
   );
 
   const staticContent = (
@@ -132,7 +166,8 @@ const GameBoardSceneRenderer = () => {
       {/* 📹 A camera through which the scene is observed and projected onto the view */}
       {/* <Camera /> */}
       {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
-      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
+      {/* {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />} */}
+      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[2.5, 4, 0]} />}
 
       {staticContent}
     </FilamentView>
