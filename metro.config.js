@@ -1,11 +1,23 @@
 const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
+const defaultConfig = getDefaultConfig(__dirname);
+
 /**
  * Metro configuration
- * https://reactnative.dev/docs/metro
+ * https://metrobundler.dev/docs/configuration
  *
  * @type {import('metro-config').MetroConfig}
  */
-const config = {};
+const config = {
+  resolver: {
+    // This makes it possible to import .glb files in your code:
+    assetExts: [
+      ...(defaultConfig.resolver?.assetExts || []),
+      'glb',
+      'filamat',
+      'mat',
+    ],
+  },
+};
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = mergeConfig(defaultConfig, config);
