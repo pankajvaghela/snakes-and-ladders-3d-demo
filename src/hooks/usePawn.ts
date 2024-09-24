@@ -1,6 +1,5 @@
 import {
   DiscreteDynamicWorld,
-  Float3,
   useBoxShape,
   useFilamentContext,
   useModel,
