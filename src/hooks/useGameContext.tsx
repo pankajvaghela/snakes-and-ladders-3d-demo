@@ -106,6 +106,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({
           // Check for ladders
           const ladderIndex = laddersStarts.indexOf(position);
           if (ladderIndex !== -1) {
+            triggerEvent('snake_or_ladder', {
+              isLadder: true,
+            });
+
             resolve(laddersEnds[ladderIndex]); // Move to the ladder's end
             return;
           }
@@ -113,6 +117,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({
           // Check for snakes
           const snakeIndex = snakesStarts.indexOf(position);
           if (snakeIndex !== -1) {
+            triggerEvent('snake_or_ladder', {
+              isSnake: true,
+            });
             resolve(snakesEnds[snakeIndex]); // Move to the snake's end
             return;
           }
@@ -122,7 +129,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({
         }, 1000); // Wait for 1 second (1000ms)
       });
     },
-    [],
+    [triggerEvent],
   );
 
   // Function to handle killing other players if they are on the same position

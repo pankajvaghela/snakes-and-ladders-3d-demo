@@ -8,7 +8,7 @@ import {
   RenderCallback,
   useFilamentContext,
 } from 'react-native-filament';
-import {StyleSheet, Text, View} from 'react-native';
+import {Alert, StyleSheet, Text, View} from 'react-native';
 import {GameBoard} from '../assets/models';
 import {SceneLight} from './core/SceneLight';
 import {useDice} from '../hooks/useDice';
@@ -31,7 +31,15 @@ const GameBoardSceneRenderer = () => {
     addEventListener,
     players,
     currentPlayer,
+    restartGame,
   } = useGameContext();
+
+  const messageRef = React.useRef<string>('');
+
+  const handleDiceRoll = useCallback(() => {
+    messageRef.current = '';
+    rollDice();
+  }, [rollDice]);
 
   useEffect(() => {
     if (!gameStarted) {
@@ -46,6 +54,8 @@ const GameBoardSceneRenderer = () => {
         console.log(
           `🚀 ~ player_killed ~ ${player.name} by ${by.name} at ${by.position}`,
         );
+
+        messageRef.current = `${player.name} killed by ${by.name} ☠️`;
       },
     );
 
@@ -53,14 +63,33 @@ const GameBoardSceneRenderer = () => {
       'game_finish',
       ({player}: {player: Player}) => {
         console.log(`🚀 ~ game_finish ~ Winner: ${player.name}`);
+
+        Alert.alert(
+          'Game Over',
+          `${player.name} has won the game!`,
+          [{text: 'New game', onPress: restartGame}],
+          {cancelable: false},
+        );
+      },
+    );
+    const snakeOrLadderListener = addEventListener(
+      'snake_or_ladder',
+      ({isSnake, isLadder}: {isSnake?: boolean; isLadder?: boolean}) => {
+        if (isSnake) {
+          messageRef.current = 'Eaten by a snake 😢';
+        }
+        if (isLadder) {
+          messageRef.current = 'Climbed up a ladder 🚀';
+        }
       },
     );
 
     return () => {
       playerKillListener();
       gameFinishListener();
+      snakeOrLadderListener();
     };
-  }, [addEventListener]);
+  }, [addEventListener, restartGame]);
 
   const {diceMeshEntity, diceRigidBody} = useDice({
     world,
@@ -129,20 +158,26 @@ const GameBoardSceneRenderer = () => {
             isTurn ? '#' : ''
           }`;
           return (
-            <Text style={{...styles.scoreBoardText, color: player.color}}>
+            <Text
+              key={index}
+              style={{...styles.scoreBoardText, color: player.color}}>
               {playerText}
             </Text>
           );
         })}
       </View>
 
+      <View style={styles.scoreBoardView}>
+        <Text style={styles.scoreBoardText}>{messageRef.current}</Text>
+      </View>
+
       {/* roll a dice view */}
       <View style={styles.rollDiceContainer}>
-        <Text style={styles.diceText} onPress={rollDice}>
+        <Text style={styles.diceText} onPress={handleDiceRoll}>
           {diceRoll && Math.floor(diceRoll)}
         </Text>
 
-        <Text style={styles.diceText} onPress={rollDice}>
+        <Text style={styles.diceText} onPress={handleDiceRoll}>
           Roll Dice
         </Text>
       </View>
@@ -161,13 +196,14 @@ const GameBoardSceneRenderer = () => {
         rotate={[0, 0, 0]}
         scale={[1, 1, 1]}
         translate={[0, -0.5, 0]}
+        receiveShadow={true}
       />
 
       {/* 📹 A camera through which the scene is observed and projected onto the view */}
       {/* <Camera /> */}
       {/* <Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[7.5, 0, 0]} /> */}
-      {/* {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />} */}
-      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[2.5, 4, 0]} />}
+      {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[1.5, 5, 0]} />}
+      {/* {<Camera cameraTarget={[0.5, 0.5, 0]} cameraPosition={[2.5, 4, 0]} />} */}
 
       {staticContent}
     </FilamentView>
@@ -208,7 +244,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
   },
   scoreBoardView: {
-    flex: 1,
+    // flex: 1,
     flexDirection: 'column',
     justifyContent: 'flex-start',
     padding: 10,
